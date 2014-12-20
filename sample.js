@@ -64,7 +64,6 @@ renameFiles: function(set, nconf, callback) {
 	  function(item, cb) {
 			// Move to output path
 			var outputPath = nconf.get("outputPathFinal")+path.sep + path.basename(item.fullPath);
-			console.log(outputPath);
 			if (fs.existsSync(outputPath) && !nconf.get("overwrite")) {
 				return cb({msg:"Output file exists. Set 'overwrite' option to allow overwriting",
 					output:nconf.get(outputPath)
