@@ -55,7 +55,7 @@ Example: process individual samples to be Machinedrum-friendly
 
 Example: process individual samples to be Octatrack-friendly, overriding some options and using SoX-supplied reverb and reverse effects
 
-```node a
+```node app ot --samples "c:/samples/909kit/"" --post="reverse reverb -w"```
 
 Example: Dump information on samples without doing any processing
 
