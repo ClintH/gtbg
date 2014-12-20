@@ -1,0 +1,29 @@
+{
+	
+	"soxBin": "sox.exe",
+	"samples": "samples/",
+	"overwrite": true,
+	"outputPath": "output/",
+	"showSoxOpts": true,
+	"chain": {
+		"sliceLength": "auto",
+		"chainLengths": [2,3,4,6,8,12,16,24,32,48,64],
+		"bitDepth": 16,
+		"sampleRate": 44100,
+		"autoGain": true,
+		"post": ""
+	},
+	"md": {
+		"sampleRate": 44100,
+		"bitDepth": 12,
+		"prefix": 1.0,
+		"post": "",
+		"removeStereo": true
+	},
+	"ot": {
+		"sampleRate": 44100,
+		"bitDepth": 16,
+		"post": "",
+		"removeStereo": false
+	}
+}
