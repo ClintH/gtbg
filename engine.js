@@ -31,7 +31,7 @@ processMeta:function(files, meta, nconf) {
 
 	util.logg("Longest file is " + longestLength[0] + " samples / " + longestLength[1] + "ms (" + files[longestIndex] + ")");
 	if (meta.length > 1)
-	util.logg("Average length is otherwise " + parseInt(runningAvg[0]) + " samples / " + runningAvg[1]+ "ms");
+	util.logg("Average length is otherwise " + parseInt(runningAvg[0]) + " samples / " + parseInt(runningAvg[1]) + "ms");
 
 	if (nconf.get("sliceLength") == "auto") {
 		nconf.set("sliceLength", longestLength[0]);
@@ -39,15 +39,15 @@ processMeta:function(files, meta, nconf) {
 			util.logg("Using max auto slice length (" + nconf.get("sliceLengthMax") + " samples)");
 			nconf.set("sliceLength", nconf.get("sliceLengthMax"));
 		} else {
-			util.logg("Using automatic slice length");
+			util.logg("Automatic slice length is " + longestLength[0] + " samples");
 		}
 	} else {
-		if (typeof(nconf.get("sliceLength") != 'undefined'))
+		if (typeof(nconf.get("sliceLength")) !== 'undefined')
 			util.logg("Using set slice length of " + nconf.get("sliceLength") + " samples.");
 	}
 	nconf.set("slices", meta.length);
 
-	// Pad end of file if necessary
+	// Calculate triming/padding if we are creating a chain
 	if (nconf.get("sliceLength")) {
 		for (var i=0;i<meta.length;i++) {
 			var diff = nconf.get("sliceLength") - meta[i].samples;
@@ -62,14 +62,22 @@ processMeta:function(files, meta, nconf) {
 		for (var i=0;i<files.length;i++) meta[i].padBy = 0;
 	}
 
+	// Final round up
 	for (var i=0;i<meta.length;i++) {
+		// Convert trim/pad settings to SoX parameters
 		if (meta[i].trimTo) {
 			soxOpts[i].push("trim 0 " + meta[i].trimTo+"s");
 		}
 		if (meta[i].padBy) {
 			soxOpts[i].push("pad 0 " + meta[i].padBy+"s");
 		}
+		// 'Upgrade' mono channels to stereo
+		if (meta[i].channels == 1) {
+			soxOpts[i].push("channels 2");
+		}
 	}
+
+	i
 	return soxOpts;
 },
 
@@ -90,8 +98,8 @@ preprocess:function(files, meta, soxOpts, nconf, completion) {
 			tmp.file(function(err, outFile, fd, cleanupCallback) {
 				if (err) return cb(err);
 				outFile += ".wav"
-				var cmd = nconf.get("soxBin") + " " + 
-					job.meta.fullPath + " " + 
+				var cmd = nconf.get("soxBin") + " \"" + 
+					job.meta.fullPath + "\" " + 
 					outFile + " " + 
 					opts;
 				if (nconf.get("showSoxOpts") && opts.length > 1)
@@ -119,9 +127,8 @@ getMetadata: function(files, path, nconf, completion) {
 	async.mapSeries(files, function(file, cb) {
 		var fullPath = path + file;
 		var soxPath = nconf.get("soxBin");
-		//var cmd = cmdify(soxPath + " --i " + fullPath);
-		var cmd = soxPath + " --i " + fullPath;
-		
+		var cmd = soxPath + " --i \"" + fullPath + "\"";
+		//console.log(cmd);
 		var ps = process.exec(cmd, function(err, stout, sterr) {
 			if (err) {
 				//console.log(err.stack);

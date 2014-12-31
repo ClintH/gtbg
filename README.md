@@ -26,7 +26,7 @@ Features for Machinedrum UW users:
 * Converts samples to MD-friendly WAV files
 
 ## In general
-Gtbg is a simple wrapper around [SoX](http://sox.sourceforge.net/), meaning audio processing is high quality, and you are able to do additional processing by specifing [SoX parameters](http://sox.sourceforge.net/sox.html).
+Gtbg is a simple wrapper around [SoX](http://sox.sourceforge.net/), meaning audio processing is high quality, and you are able to do additional processing by specifing [SoX parameters](http://sox.sourceforge.net/sox.html). When scanning directories, Gtbg filters out files that don't have WAV, AIFF or MP3 extensions.
 
 # Installing
 
@@ -34,11 +34,13 @@ Gtbg is a simple wrapper around [SoX](http://sox.sourceforge.net/), meaning audi
 2. Make a directory on your computer for gtbg to live
 3. Open the command line / terminal and change directory to this location
 4. Run ```npm install gtbg``` to download and install gtbg.
-5. Install [SoX](http://sox.sourceforge.net) into this same directory
+5. Install [SoX](http://sox.sourceforge.net) into this same directory. If you are on a non-Windows platform, edit `config.json` and change value of `soxBin` to `sox` instead of `sox.exe`.
+
+Note: If you wish to work with MP3 files, SoX requires you install libmad as well.
 
 # Using
 
-Gtbg is configured via ```config.json```, and you are able to override these settings by using command line options. Each command is configured by its named block in ```config.json```. 
+Gtbg is configured via ```config.json```, and you are able to override these settings by using command line options. Each command is configured by its named block in ```config.json```.
 
 Output files are by default placed in the "output" folder in the same place you run gtbg.
 

@@ -73,11 +73,11 @@ function processDirectory(absBasePath, nconf, completion) {
 	nconf.set("absBasePath", absBasePath);
 	handleDirectory(absBasePath, nconf, function(err, set) {
 		if (err) return completion(err);
-		
+
 		nconf.defaults({outputPath:path.dirname(absBasePath)});
 		var p = path.resolve(nconf.get("outputPath"));
 		nconf.set("outputPath", p);
-		
+
 		mkdirp(p, function(err) {
 			if (err) return completion(err);
 			loadedSet(set, function(err, result) {
@@ -146,7 +146,7 @@ function handleDirectory(basePath, nconf, completion) {
 		function(callback) {
 			// Filter out no sample-looking things
 			var filteredFiles = files.filter(function(f) {
-				return (strings.endsWith(f, ".wav") || strings.endsWith(f, ".mp3"))
+				return (strings.endsWith(f, ".aiff") || strings.endsWith(f, ".wav") || strings.endsWith(f, ".mp3"))
 			})
 			callback(null, filteredFiles);
 		},
