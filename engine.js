@@ -33,6 +33,7 @@ processMeta:function(files, meta, nconf) {
 	if (meta.length > 1)
 	util.logg("Average length is otherwise " + parseInt(runningAvg[0]) + " samples / " + parseInt(runningAvg[1]) + "ms");
 
+	var slicing = false;
 	if (nconf.get("sliceLength") == "auto") {
 		nconf.set("sliceLength", longestLength[0]);
 		if (nconf.get("sliceLengthMax") && (nconf.get("sliceLength") > nconf.get("sliceLengthMax"))) {
@@ -41,6 +42,7 @@ processMeta:function(files, meta, nconf) {
 		} else {
 			util.logg("Automatic slice length is " + longestLength[0] + " samples");
 		}
+		slicing = true;
 	} else {
 		if (typeof(nconf.get("sliceLength")) !== 'undefined')
 			util.logg("Using set slice length of " + nconf.get("sliceLength") + " samples.");
@@ -72,12 +74,10 @@ processMeta:function(files, meta, nconf) {
 			soxOpts[i].push("pad 0 " + meta[i].padBy+"s");
 		}
 		// 'Upgrade' mono channels to stereo
-		if (meta[i].channels == 1) {
+		if (slicing && meta[i].channels == 1) {
 			soxOpts[i].push("channels 2");
 		}
 	}
-
-	i
 	return soxOpts;
 },
 
