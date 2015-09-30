@@ -1,11 +1,9 @@
 var async = require('async'),
 	process = require("child_process"),
 	tmp = require("tmp"),
-	
 	fs = require("fs"),
 	util = require("./util"),
 	strings = require("./strings")
-
 ;
 
 module.exports = {
@@ -73,9 +71,15 @@ processMeta:function(files, meta, nconf) {
 		if (meta[i].padBy) {
 			soxOpts[i].push("pad 0 " + meta[i].padBy+"s");
 		}
+
 		// 'Upgrade' mono channels to stereo
-		if (slicing && meta[i].channels == 1) {
+		//if (slicing && meta[i].channels == 1) {
+		if (meta[i].channels == 1) {
 			soxOpts[i].push("channels 2");
+		}
+		// Change sample rate if necessary
+		if (meta[i].sampleRate !== nconf.get("sampleRate")) {
+			soxOpts[i].push("rate " + nconf.get("sampleRate"));	
 		}
 	}
 	return soxOpts;
@@ -125,23 +129,27 @@ preprocess:function(files, meta, soxOpts, nconf, completion) {
 
 getMetadata: function(files, path, nconf, completion) { 
 	async.mapSeries(files, function(file, cb) {
+		if (file.indexOf(".") < 0) {
+			// Seems to be a directory
+			return cb(null);
+		}
 		var fullPath = path + file;
+	
 		var soxPath = nconf.get("soxBin");
 		var cmd = soxPath + " --i \"" + fullPath + "\"";
-		//console.log(cmd);
 		var ps = process.exec(cmd, function(err, stout, sterr) {
 			if (err) {
 				//console.log(err.stack);
 				//console.log("Code: " + err.code);
 				//console.log("Signal: " + err.signal);
 				//console.log("Msg: " + sterr);
-				var e ={msg: "Could not look up metadata", raw: sterr, path: fullPath};
+				var e ={msg: "Could not look up metadata", raw: err, path: fullPath};
 				if (!fs.existsSync(soxPath)) {
 					e.fix = "Is Sox located at " + soxPath +"?"; 
 				} 
 				return cb(e);
 			} else {
-				var lines = stout.split("\n");
+				var lines = stout.trim().split("\n");
 				var meta = {
 					path: path,
 					fullPath: fullPath
@@ -159,6 +167,7 @@ getMetadata: function(files, path, nconf, completion) {
 					else if (lineSplit[0] == "Channels") meta.channels = parseInt(lineSplit[1]);
 					else if (lineSplit[0] == "Duration") {
 						meta.duration = lineSplit[1];
+						lineSplit[1] = lineSplit[1].replace("~", "="); // fluff over
 						var split = strings.splitTrim(lineSplit[1], " = ");
 
 						// Not sure why, but moment.duration() seems unable to parse properly

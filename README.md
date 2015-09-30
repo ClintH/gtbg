@@ -1,7 +1,7 @@
 gtbg
 ====
 
-A tool to help you prepare samples for use with the Elektron Machinedrum UW and Octatrack. It works on Mac and PC.
+A tool to help you prepare samples for use with the Elektron Machinedrum UW, Octatrack and Rytm. It works on Mac and PC and presumably Linux as well.
 
 For accuracy, sample triming/padding is calculated at the sample level rather than milliseconds.
 
@@ -19,6 +19,12 @@ Eg, I see from Gtbg's output that a ride sample runs for 342,456 samples (7,770m
 
 Resuling in a trimmed-down chain file as each slice will be much shorter.
 
+## Analog Rytm
+
+Features for Rytm users:
+* Like for Octatrack, create sample chains from a folder of samples, normalised to Rytm sample start and hold parameters
+* Normalise volume and converts to monophonic, 16-bit 44.1kHz
+
 ## Machinedrum UW
 
 Features for Machinedrum UW users:
@@ -34,9 +40,10 @@ Gtbg is a simple wrapper around [SoX](http://sox.sourceforge.net/), meaning audi
 2. Make a directory on your computer for gtbg to live
 3. Open the command line / terminal and change directory to this location
 4. Run ```npm install gtbg``` to download and install gtbg.
-5. Install [SoX](http://sox.sourceforge.net) into this same directory. If you are on a non-Windows platform, edit `config.json` and change value of `soxBin` to `sox` instead of `sox.exe`.
+5. Install [SoX](http://sox.sourceforge.net) into this same directory. On Windows and Mac, this is just a matter of unzipping the binaries.
+6. Edit `config.json` and make sure `soxBin` is `sox` for Mac/Linux and `sox.exe` for Windows.
 
-Note: If you wish to work with MP3 files, SoX requires you install libmad as well.
+Note: If you wish to work with MP3 files, SoX requires you install libmad as well. Again, the necessary libraries just have to be placed in the same directory as Gtbg.
 
 # Using
 
@@ -55,6 +62,11 @@ Example: process individual samples to be Machinedrum-friendly
 
 ```node app md --samples "c:/samples/909kit/"```
 
+Example: convert each subdirectory of 'samples' to be its own sample chain for the Rytm
+
+```node app chainRytm --samples "c:/samples/"```
+
+
 Example: process individual samples to be Octatrack-friendly, overriding some options and using SoX-supplied reverb and reverse effects
 
 ```node app ot --samples "c:/samples/909kit/"" --post="reverse reverb -w"```
@@ -68,7 +80,7 @@ Example: if you have a directory 'samples', and with sub-folders for different k
 ```node app ot --samples "c:/samples/"```
 
 # Options
-Gtbg has a set of global options which apply for all operations, and individual options for the ```chain```, ```ot``` and ```md`` commands.
+Gtbg has a set of global options which apply for all operations, and individual options for the ```chain```, ```chainRytm```, ```ot``` and ```md`` commands.
 
 ## Global options
 
@@ -92,6 +104,9 @@ sliceLength
 
 sliceLengthMax
 * If ```sliceLength = 'auto'```, this parameter, defined in audio samples, allows you to set an upper bound on the length of slices. Any file longer than the max will be truncated to fit.
+
+appendSliceCount
+* If ```true```, the count of slices in the chain is appended to its filename. This is handy so you know what slice grid to use on the Octatrack or what sample settings for the Rytm.
 
 ## Individual options
 

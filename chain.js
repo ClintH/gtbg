@@ -1,5 +1,5 @@
 var async = require("async"),
-	fs = require("fs"),
+	fs = require("fs-extra"),
 	process = require("child_process"),
 	tmp = require("tmp"),
 	path = require("path"),
@@ -11,6 +11,8 @@ var async = require("async"),
 
 module.exports = {
 process:function(set, nconf, completion) {
+	if (typeof set.files == 'undefined') throw new Error("No set");
+
 	var me = this;
 	async.waterfall([
 		function(callback) {
@@ -24,9 +26,14 @@ process:function(set, nconf, completion) {
 			nconf.set("outputPathFinal", 
 				strings.endsWithRemove(nconf.get("outputPath"), path.sep));
 
+			var file = path.basename(nconf.get("absBasePath"));
+			if (nconf.get("appendSliceCount")) {
+				file += "-" + nconf.get("slices");
+			}
+
 			nconf.set("outputPathFinal", 
 				path.join(nconf.get("outputPath"), 
-				path.basename(nconf.get("absBasePath"))) + ".wav");
+				file + ".wav"));
 			me.concat(set.files, set.meta, nconf, callback);
 		},
 		function(filename, callback) {
@@ -40,7 +47,8 @@ process:function(set, nconf, completion) {
 					output:nconf.get("outputPathFinal")
 				})
 			}
-			fs.rename(filename, nconf.get("outputPathFinal"), function(err) {
+
+			fs.move(filename, nconf.get("outputPathFinal"), {clobber:true}, function(err) {
 				if (err) {
 					var e = {};
 					if (err.code == "EPERM") {

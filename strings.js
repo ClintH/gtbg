@@ -12,8 +12,9 @@ module.exports =  {
 	},
 
 	endsWith: function(haystack, needle) {
-		if (haystack.length < needle) return false;
+		if (haystack.length <= needle.length) return false;
 		var pos = haystack.toLowerCase().lastIndexOf(needle.toLowerCase());
+		if (pos < 0) return false;
 		return (pos + needle.length == haystack.length)
 	},
 

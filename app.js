@@ -24,6 +24,7 @@ if (args._.length == 0 || args._[0] == "help") {
 	util.log("Usage:");
 	util.log(" node app info: Display info on samples");
 	util.log("         chain: Create sample chains for the Octatrack");
+	util.log("     chainRytm: Create sample chains for the Rytm");
 	util.log("            ot: Process samples for Octatrack");
 	util.log("            md: Process for Machinedrum");
 	util.log("\nFor additional info and options, please see README.md");
@@ -73,6 +74,7 @@ function processDirectory(absBasePath, nconf, completion) {
 	nconf.set("absBasePath", absBasePath);
 	handleDirectory(absBasePath, nconf, function(err, set) {
 		if (err) return completion(err);
+		if (set.meta.length == 0) return completion();
 
 		nconf.defaults({outputPath:path.dirname(absBasePath)});
 		var p = path.resolve(nconf.get("outputPath"));
@@ -99,7 +101,6 @@ function showError(err) {
 		if (err.options) 	util.loge("Options: " +  err.options);
 		if (err.input) 		util.loge("Input:   " + err.input);
 		if (err.output)	 	util.loge("Output:  " + err.output);
-		//console.dir(err);
 }
 
 function loadedSet(set, completion) {
@@ -115,6 +116,9 @@ function loadedSet(set, completion) {
 
 	switch (args._[0]) {
 	case "chain":
+		op = require("./chain");
+		break;		
+	case "chainRytm":
 		op = require("./chain");
 		break;
 	case "info":
@@ -140,18 +144,23 @@ function handleDirectory(basePath, nconf, completion) {
 			basePath += path.sep;
 
 	var files = fs.readdirSync(basePath);
+	
 	var set = {};
 
 	async.waterfall([
 		function(callback) {
-			// Filter out no sample-looking things
+			// Filter out non sample-looking things
 			var filteredFiles = files.filter(function(f) {
 				return (strings.endsWith(f, ".aiff") || strings.endsWith(f, ".wav") || strings.endsWith(f, ".mp3"))
 			})
 			callback(null, filteredFiles);
 		},
 		function(filteredFiles, callback) {
+
 			util.log("Extracting information for " + filteredFiles.length + " file(s)");
+			if (filteredFiles.length == 0) {
+				return callback(null, []);
+			}
 			set.files = filteredFiles;
 			engine.getMetadata(set.files, basePath, nconf, callback);
 		}

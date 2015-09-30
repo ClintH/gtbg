@@ -16,7 +16,6 @@ loge:function(m) {
 
 getOutputParams: function(opts) {
 	var humanOut = "";
-
 	var outFormat = "--bits " + opts.get("bitDepth") +" ";
 	var sox = "rate " + opts.get("sampleRate") +" "
 	humanOut = opts.get("bitDepth") +"@" + opts.get("sampleRate");
