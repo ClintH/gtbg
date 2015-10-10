@@ -3,3 +3,4 @@ output/
 samples/
 sox.exe
 sox
+*.dll

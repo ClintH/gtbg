@@ -23,7 +23,7 @@ nconf.argv()
 if (args._.length == 0 || args._[0] == "help") {
 	util.log("Usage:");
 	util.log(" node app info: Display info on samples");
-	util.log("         chain: Create sample chains for the Octatrack");
+	util.log("       chainOt: Create sample chains for the Octatrack");
 	util.log("     chainRytm: Create sample chains for the Rytm");
 	util.log("            ot: Process samples for Octatrack");
 	util.log("            md: Process for Machinedrum");
@@ -115,7 +115,7 @@ function loadedSet(set, completion) {
 	});
 
 	switch (args._[0]) {
-	case "chain":
+	case "chainOt":
 		op = require("./chain");
 		break;		
 	case "chainRytm":
@@ -132,7 +132,7 @@ function loadedSet(set, completion) {
 	if (op == null) {
 		completion({
 				msg:"Unknown command '" + args._[0] + "'",
-				fix:"Try 'info', 'chain', 'md' or 'ot'	."
+				fix:"Try 'info', 'chainOt', 'chainRytm', 'md' or 'ot'	."
 		});		
 	} else {
 		op.process(set, nconf, completion);

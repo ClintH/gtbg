@@ -53,10 +53,11 @@ Output files are by default placed in the "output" folder in the same place you 
 
 Example: produce a sample chain made from all the samples in a specified directory (producing "909kit.wav" in the process):
 
-```node app chain --samples "c:/samples/909kit/"```
+```node app chainOt --samples "c:/samples/909kit/"```
 
-Example: process individual samples to be Octatrack-friendly
-```node app ot --samples "c:/samples/909kit/"```
+Example: process individual samples to be Octatrack-friendly, outputting to a specified location:
+
+```node app ot --samples "c:/samples/909kit/" --outputPath "c:/output/"```
 
 Example: process individual samples to be Machinedrum-friendly
 
@@ -80,7 +81,7 @@ Example: if you have a directory 'samples', and with sub-folders for different k
 ```node app ot --samples "c:/samples/"```
 
 # Options
-Gtbg has a set of global options which apply for all operations, and individual options for the ```chain```, ```chainRytm```, ```ot``` and ```md`` commands.
+Gtbg has a set of global options which apply for all operations, and individual options for the ```chainOt```, ```chainRytm```, ```ot``` and ```md`` commands.
 
 ## Global options
 
@@ -106,10 +107,9 @@ sliceLengthMax
 * If ```sliceLength = 'auto'```, this parameter, defined in audio samples, allows you to set an upper bound on the length of slices. Any file longer than the max will be truncated to fit.
 
 appendSliceCount
-* If ```true```, the count of slices in the chain is appended to its filename. This is handy so you know what slice grid to use on the Octatrack or what sample settings for the Rytm.
+* If ```true```, the count of slices in the chain is appended to its filename. This is handy so you know what sample start/end or slice settings you need on your machine.
 
 ## Individual options
-
 
 sampleRate
 * Sample rate of output files
