@@ -2,26 +2,18 @@
 var _ = require("lodash"),
   chalk = require("chalk"),
   fs = require("fs"),
+  path = require("path"),
+  util = require("./util"),
   config = require("./config");
 
 var Presets = function() {};
-// Presets.prototype.setActive = function(p) {
-//   this.active = p;
-// }
-// Presets.prototype.getActive = function() {
-//   return this.active;
-// }
 Presets.prototype.init = function() {
-  var path = config.get("presets");
-  var str = fs.readFileSync(path);
-  this.data = null;
-  try {
-    this.data = JSON.parse(str);
-    console.log(chalk.dim("Presets: " + path + " (" + _.keys(this.data).length + ")"));
-  }
-  catch (err) {
-    console.log(chalk.red("Could not parse presets"));
-    console.log(err);
+  var paths = [path.join(__dirname, "presets.json"), "gtbg-presets.json", config.get("presets")];
+  this.data = {};
+  for (var i=0;i<paths.length;i++) {
+    var err = util.layerOnData(paths[i], this.data);
+    if (err && i == 0)
+      console.log(chalk.red("Could not load: " + err));
   }
 }
 Presets.prototype.get = function(key) {

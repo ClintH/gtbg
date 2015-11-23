@@ -1,4 +1,5 @@
 var chalk = require("chalk"),
+  _ = require("lodash"),
   fs = require("fs");
 
 module.exports = {
@@ -26,6 +27,19 @@ logg:function(m) {
 loge:function(m) {
 	console.log(chalk.red("Error: ")  + m);
 },
-
+layerOnData: function(f, existing) {
+  var exists = this.fileExists(f);
+  if (exists !== null) return exists;
+  var str = fs.readFileSync(f);
+  var o = null;
+  try {
+    o = JSON.parse(str);
+    _.merge(existing, o);
+  }
+  catch (err) {
+    return err;
+  }
+  return null;
+}
 
 }

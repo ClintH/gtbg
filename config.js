@@ -1,16 +1,19 @@
 "use strict";
 var _ = require("lodash"),
   chalk = require("chalk"),
+  path = require("path"),
   fs = require("fs"),
   util = require("./util");
 
 var Config = function() {};
 Config.prototype.init = function() {
-  var path = "config.json";
+  var paths = [path.join(__dirname, "config.json"), "gtbg-config.json"];
   this.data = {};
-  var err = this.layerOn(path);
-  if (err)
-    console.log(chalk.red("Could not load: " + err));
+  for (var i=0;i<paths.length;i++) {
+    var err = util.layerOnData(paths[i], this.data);
+    if (err && i == 0)
+      console.log(chalk.red("Could not load: " + err + " (" + paths[i] + ")"));
+  }
 }
 Config.prototype.layerArgs = function(args) {
   var me = this;
@@ -23,21 +26,6 @@ Config.prototype.layerArgs = function(args) {
 Config.prototype.setDefault = function(k,v) {
   if (typeof(this.data[k]) == 'undefined')
       this.data[k] = v;
-}
-
-Config.prototype.layerOn = function(f) {
-  var exists = util.fileExists(f);
-  if (exists !== null) return exists;
-  var str = fs.readFileSync(f);
-  var o = null;
-  try {
-    o = JSON.parse(str);
-    _.merge(this.data, o);
-  }
-  catch (err) {
-    return err;
-  }
-  return null;
 }
 Config.prototype.set = function(key, value) {
   this.data[key] = value;

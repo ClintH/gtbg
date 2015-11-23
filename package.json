@@ -1,6 +1,6 @@
 {
   "name": "gtbg",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sample preparer for Elektron Octatrack, Rytm and Machinedrum",
   "main": "app.js",
   "author": "Clint Heyer",
@@ -34,7 +34,8 @@
     "mkdirp": "^0.5.0",
     "fs-extra": "0.24.0",
     "opener": "1.4.1",
-    "yargs": "3.29.0"
+    "yargs": "3.29.0",
+    "update-notifier": "0.5.0"
   },
   "bugs": {
     "url": "https://github.com/ClintH/gtbg/issues"

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 var inquirer = require("inquirer"),
 	fs = require("fs"),
@@ -16,9 +17,11 @@ var inquirer = require("inquirer"),
 	presets = require("./presets")
 	;
 
-console.log("\n " + chalk.white.bgRed("/_") + " gtbg\n");
+const updateNotifier = require('update-notifier');
+const pkg = require('./package.json');
+updateNotifier({pkg}).notify();
 
-//console.dir(argv);
+console.log("\n " + chalk.white.bgRed("/_") + " gtbg\n");
 
 config.init(); // Load from config
 config.layerArgs(argv); // Add in commandline overrides
