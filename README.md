@@ -5,6 +5,8 @@ A tool to help you prepare samples for use with the Elektron Machinedrum UW, Oct
 
 For accuracy, sample triming/padding is calculated at the sample level rather than milliseconds.
 
+![gtbg](https://cloud.githubusercontent.com/assets/533348/11336522/42a469e6-91e6-11e5-9afd-017550cc745d.gif)
+
 ## Octatrack
 
 Features for Octatrack users:
