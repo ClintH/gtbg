@@ -18,6 +18,16 @@ module.exports =  {
 		return (pos + needle.length == haystack.length)
 	},
 
+	startsWith: function(haystack, needle) {
+		if (typeof(haystack) == 'undefined') return false;
+		if (typeof(needle) == 'undefined') return false;
+
+		if (haystack.length <= needle.length) return false;
+		var pos = haystack.toLowerCase().indexOf(needle.toLowerCase());
+		if (pos == 0) return true;
+		return false;
+	},
+
 	endsWithRemove: function(haystack, needle) {
 		if (this.endsWith(haystack, needle)) {
 			return haystack.substr(0, haystack.length - needle.length);

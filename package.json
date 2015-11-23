@@ -1,26 +1,40 @@
 {
   "name": "gtbg",
-  "version": "0.0.3",
-  "description": "Sample preparer for Elektron Octatrack and Machinedrum",
+  "version": "0.1.0",
+  "description": "Sample preparer for Elektron Octatrack, Rytm and Machinedrum",
   "main": "app.js",
   "author": "Clint Heyer",
   "license": "MIT",
+  "keywords": [
+    "elektron",
+    "octatrack",
+    "machinedrum",
+    "samples",
+    "rytm"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ClintH/gtbg.git"
   },
+  "bin": {
+    "gtbg": "./app.js"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "preferGlobal": true,
   "dependencies": {
-    "inquirer": "0.8.0",
+    "inquirer": "0.11.0",
     "async": "0.9.0",
     "cmdify": "0.0.4",
     "moment": "2.8.3",
     "tmp": "0.0.24",
-    "nconf": "0.6.9",
-    "optimist": "0.6.0",
-    "colors": "^1.0.3",
+    "chalk": "1.1.1",
     "lodash": "^2.4.1",
     "mkdirp": "^0.5.0",
-    "fs-extra": "0.24.0"
+    "fs-extra": "0.24.0",
+    "opener": "1.4.1",
+    "yargs": "3.29.0"
   },
   "bugs": {
     "url": "https://github.com/ClintH/gtbg/issues"

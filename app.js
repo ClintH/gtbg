@@ -5,84 +5,135 @@ var inquirer = require("inquirer"),
 	util = require("util"),
 	path = require("path"),
 	mkdirp = require("mkdirp"),
-	nconf = require("nconf"),
-	args = require("optimist").argv,
-	colors = require("colors/safe"),
+	chalk = require("chalk"),
 	_ = require("lodash"),
+	argv = require("yargs").argv,
+	config = require("./config"),
 	strings = require("./strings"),
 	util = require("./util"),
-	engine = require("./engine")
+	engine = require("./engine"),
+	sox = require("./sox"),
+	presets = require("./presets")
 	;
 
-console.log(colors.inverse("gtbg"));
+console.log("\n " + chalk.white.bgRed("/_") + " gtbg\n");
 
-nconf.argv()
-	.env()
-  .file({ file: 'config.json' });
+//console.dir(argv);
 
-if (args._.length == 0 || args._[0] == "help") {
-	util.log("Usage:");
-	util.log(" node app info: Display info on samples");
-	util.log("       chainOt: Create sample chains for the Octatrack");
-	util.log("     chainRytm: Create sample chains for the Rytm");
-	util.log("            ot: Process samples for Octatrack");
-	util.log("            md: Process for Machinedrum");
-	util.log("\nFor additional info and options, please see README.md");
+config.init(); // Load from config
+config.layerArgs(argv); // Add in commandline overrides
+presets.init();
 
-}
+if (!sox.exists()) {
+  sox.install();
+} else {
+	// Sox is installed
+	if (argv._.length == 0) { // No command
+		var ui = require("./ui");
+		ui(function(complete) {
+			start(complete);
+		});
+	} else {
+			var opt = argv._[0];
+			if (opt == "info") {
+				start({});
+				return;
+			}
 
-// First validate existence of samples directory
-var relBasePath = nconf.get("samples");
-try {
-	var absBasePath = fs.realpathSync(nconf.get("samples"));
-	if (!fs.existsSync(absBasePath)) {
-		util.loge("Sample path does not exist: " + relBasePath);
-		return;
+			// Some command
+			// Load preset
+			var preset = presets.get(opt);
+			if (preset == null) {
+				console.log(chalk.red("Preset '" + opt + "' not found."));
+				console.log("Try: " + presets.getKeys().join(", "));
+			} else {
+				// Got a valid preset
+				start(preset);
+			}
 	}	
-} catch (e) {
-	showError({
-		raw: e.toString(),
-		msg: "Could not resolve path '" +  relBasePath + "'"
-	});
-	return;
 }
 
-var contents = fs.readdirSync(absBasePath);
+function start(p) {
+	// Copy base config to preset if not present
+	_.forIn(config.data, function(v,k) {
+		if (typeof(p[k]) == 'undefined') {
+			p[k] = config.data[k];
+		}
+	})
 
-async.forEachSeries(
-  contents, 
-  // Process sub-directories
-  function(item, callback) {
-  	var p = absBasePath + path.sep +  item;
-   	if (fs.lstatSync(p).isDirectory()) {
-  		processDirectory(p, nconf, callback);
-    } else callback();
+	// Copy overrides from command line to active preset
+	_.forIn(p, function(v,k) {
+		if (typeof(argv[k]) !== 'undefined') {
+			p[k] = argv[k];
+		}
+	})
 
-  }, 
-  function(err){
-    if (err) {
-      return showError(err);
-    }
-    // Process parent
-    processDirectory(absBasePath, nconf, function(err) {
-    	if (err) showError(err);
-    	else util.log("All done.");
-    })
-  }
-);
-function processDirectory(absBasePath, nconf, completion) {
-	nconf.set("absBasePath", absBasePath);
-	handleDirectory(absBasePath, nconf, function(err, set) {
+	// Validate existence of samples directory
+	var relBasePath = p.samples;
+	try {
+		var absBasePath = fs.realpathSync(p.samples);
+		if (!fs.existsSync(absBasePath)) {
+			util.loge("Sample path does not exist: " + relBasePath);
+			return;
+		}	
+	} catch (e) {
+		showError({
+			raw: e.toString(),
+			msg: "Could not resolve path '" +  relBasePath + "'"
+		});
+		return;
+	}
+
+	var contents = fs.readdirSync(absBasePath);
+
+	async.forEachSeries(
+	  contents, 
+	  // Process sub-directories
+	  function(item, callback) {
+	  	var fullPath = absBasePath + path.sep +  item;
+	   	if (fs.lstatSync(fullPath).isDirectory()) {
+	   		preset = _.clone(p, true);
+	   		
+	   		// Output individual samples to subdirectories
+	   		if (preset.outputPath && typeof(preset.sliceLength) == 'undefined') {
+	   			if (strings.endsWith(preset.outputPath, "/")) {
+	   				preset.outputPath += item + "/";
+	   			}
+	   		}
+
+				processDirectory(fullPath, preset, callback);
+	    } else callback();
+	  }, 
+	  function(err){
+	    if (err) {
+	      return showError(err);
+	    }
+	    // Process parent
+	    processDirectory(absBasePath, _.clone(p, true), function(err) {
+	    	if (err) showError(err);
+	    	else {
+	    		console.log(chalk.yellow("\nAll done."));
+	    	}
+	    })
+	  }
+	);
+}
+
+function processDirectory(absBasePath, preset, completion) {
+	console.log("Processing: " + absBasePath);
+	preset.absBasePath = absBasePath;
+	handleDirectory(absBasePath, function(err, set) {
 		if (err) return completion(err);
 		if (set.meta.length == 0) return completion();
+		if (typeof preset["outputPath"] == 'undefined') {
+			preset.outputPath = path.dirname(absBasePath);
+		}
 
-		nconf.defaults({outputPath:path.dirname(absBasePath)});
-		var p = path.resolve(nconf.get("outputPath"));
-		nconf.set("outputPath", p);
+		preset.outputPath = path.resolve(preset.outputPath);
 
-		mkdirp(p, function(err) {
+		mkdirp(preset.outputPath, function(err) {
 			if (err) return completion(err);
-			loadedSet(set, function(err, result) {
+			loadedSet(set, preset, function(err, result) {
 				if (err) return completion(err);
 				else completion();
 			})
@@ -103,48 +154,23 @@ function showError(err) {
 		if (err.output)	 	util.loge("Output:  " + err.output);
 }
 
-function loadedSet(set, completion) {
+function loadedSet(set, preset, completion) {
 	var op = null;
-	// Get command-level options
-	var opts = nconf.get(args._[0]);
-	// Copy options to top-level if they aren't
-	// already set (ie via command line params)
-	_.forIn(opts, function(value, key) {
-		if (typeof(nconf.get(key)) == "undefined") 
-			nconf.set(key, value);
-	});
-
-	switch (args._[0]) {
-	case "chainOt":
-		op = require("./chain");
-		break;		
-	case "chainRytm":
-		op = require("./chain");
-		break;
-	case "info":
+	if (preset.sliceLength) {
+		op = require("./chain")
+	} else if (argv._[0] == "info") {
 		op = require("./info");
-		break;
-	default:
-		if (nconf.get(args._[0])) {
-			op = require("./sample");
-		}
-	}
-	if (op == null) {
-		completion({
-				msg:"Unknown command '" + args._[0] + "'",
-				fix:"Try 'info', 'chainOt', 'chainRytm', 'md' or 'ot'	."
-		});		
 	} else {
-		op.process(set, nconf, completion);
+		op  = require("./sample");
 	}
+	op.process(set, preset, completion);	
 }
 
-function handleDirectory(basePath, nconf, completion) {
+function handleDirectory(basePath, completion) {
 	if (!strings.endsWith(basePath, "/") && !strings.endsWith(basePath, "\\")) 
 			basePath += path.sep;
 
 	var files = fs.readdirSync(basePath);
-	
 	var set = {};
 
 	async.waterfall([
@@ -156,13 +182,10 @@ function handleDirectory(basePath, nconf, completion) {
 			callback(null, filteredFiles);
 		},
 		function(filteredFiles, callback) {
-
 			util.log("Extracting information for " + filteredFiles.length + " file(s)");
-			if (filteredFiles.length == 0) {
-				return callback(null, []);
-			}
+			if (filteredFiles.length == 0) return callback(null, []); // No files
 			set.files = filteredFiles;
-			engine.getMetadata(set.files, basePath, nconf, callback);
+			engine.getMetadata(set.files, basePath, callback);
 		}
 	], function(err, results) {
 		set.meta = results;

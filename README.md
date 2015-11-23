@@ -15,7 +15,7 @@ The time length of each slice is by default (```sliceLength = 'auto'```) the len
 
 Eg, I see from Gtbg's output that a ride sample runs for 342,456 samples (7,770ms). Eyeballing the output chain file, it's clear that only half of that length is needed. I could then run:
 
-```node app chain --sliceLength=171228```
+```gtbg chainOt --sliceLength=171228```
 
 Resuling in a trimmed-down chain file as each slice will be much shorter.
 
@@ -36,49 +36,76 @@ Gtbg is a simple wrapper around [SoX](http://sox.sourceforge.net/), meaning audi
 
 # Installing
 
-1. Install [Node.js](http://nodejs.org/) for your platform
-2. Make a directory on your computer for gtbg to live
-3. Open the command line / terminal and change directory to this location
-4. Run ```npm install gtbg``` to download and install gtbg.
-5. Install [SoX](http://sox.sourceforge.net) into this same directory. On Windows and Mac, this is just a matter of unzipping the binaries.
-6. Edit `config.json` and make sure `soxBin` is `sox` for Mac/Linux and `sox.exe` for Windows.
+## 1. Install Node.js
 
-Note: If you wish to work with MP3 files, SoX requires you install libmad as well. Again, the necessary libraries just have to be placed in the same directory as Gtbg.
+[Download](http://nodejs.org/) and run the installer for your platform  for your platform.
 
-# Using
+## 2. Install gtbg
 
-Gtbg is configured via ```config.json```, and you are able to override these settings by using command line options. Each command is configured by its named block in ```config.json```.
+In the terminal/command prompt, run:
+```
+npm -g install gtbg
+```
+
+This will make the command ```gtbg``` available globally on your computer.
+
+## 3. Install SoX
+
+### Mac
+If you are on a Mac, I recommend installing [Homebrew](http://brew.sh/), a package manager to simplify installations. Once Homebrew is installed, you can install SoX with the simple command:
+
+```
+brew install sox
+```
+
+If you don't want to install it this way, please [download](http://sourceforge.net/projects/sox/files/sox/14.4.2/) and unzip SoX so it lives in your path.
+
+### Windows
+If you are on Windows, I recommend using [Chocolately](https://chocolatey.org/), a package manager to simplify installations. Once Chocolately is installed, you can install SoX with the simple command:
+
+```
+choco install sox
+```
+
+If you don't want to install it this way, please [download](http://sourceforge.net/projects/sox/files/sox/14.4.2/) and unzip SoX so it lives in your path.
+
+# Quick start
+
+To start off, you can run gtbg in _interactive_ mode, just by running 'gtbg'. You will be able to select from an available preset, choose your sample source directory and output directory.
+
+# Usage examples
+
+Gtbg has a base configuration file (config.json) which stores global settings. There is also a presets file (presets.json) with groups of settings which override the base configuration file. You can also specify options on the command line which override both preset and globals.
 
 Output files are by default placed in the "output" folder in the same place you run gtbg.
 
 Example: produce a sample chain made from all the samples in a specified directory (producing "909kit.wav" in the process):
 
-```node app chainOt --samples "c:/samples/909kit/"```
+```gtbg chainOt --samples "c:/samples/909kit/"```
 
 Example: process individual samples to be Octatrack-friendly, outputting to a specified location:
 
-```node app ot --samples "c:/samples/909kit/" --outputPath "c:/output/"```
+```gtbg ot --samples "c:/samples/909kit/" --outputPath "c:/output/"```
 
 Example: process individual samples to be Machinedrum-friendly
 
-```node app md --samples "c:/samples/909kit/"```
+```gtbg md --samples "c:/samples/909kit/"```
 
 Example: convert each subdirectory of 'samples' to be its own sample chain for the Rytm
 
-```node app chainRytm --samples "c:/samples/"```
-
+```gtbg chainRytm --samples "c:/samples/"```
 
 Example: process individual samples to be Octatrack-friendly, overriding some options and using SoX-supplied reverb and reverse effects
 
-```node app ot --samples "c:/samples/909kit/"" --post="reverse reverb -w"```
+```gtbg ot --samples "c:/samples/909kit/"" --post="reverse reverb -w"```
 
 Example: Dump information on samples without doing any processing
 
-```node app info --samples "c:/samples/909kit/"```
+```gtbg info --samples "c:/samples/909kit/"```
 
 Example: if you have a directory 'samples', and with sub-folders for different kits, you use process them in one batch:
 
-```node app ot --samples "c:/samples/"```
+```gtbg ot --samples "c:/samples/"```
 
 # Options
 Gtbg has a set of global options which apply for all operations, and individual options for the ```chainOt```, ```chainRytm```, ```ot``` and ```md`` commands.
@@ -92,6 +119,10 @@ samples
 overwrite
 * Set to ```false``` to prevent output files being overwritten
 * Default: true
+
+showSoxOpts
+* Set to ```true``` to see what options are passed to SoX
+* Default: false
 
 ## Chain options
 
@@ -119,7 +150,7 @@ prefix
 * Relative amount of dead air to prefix sample by. A value of 1.0 (100%) would mean that the sample length is doubled, with dead air of the same length as the sample preceeding the sample. A value of 0.5 (50%) would mean that the sample is preceeded by dead air half as long as the sample. Relative amounts are used because the Machinedrum uses a fixed 1-127 sample start parameter which is relative to the sample length.
 
 post
-* Arbitrary command line options to pass to SoX
+* Arbitrary [command line options to pass to SoX](http://sox.sourceforge.net/sox.html)
 
 removeStereo
 * If ```true``` sample is converted to mono

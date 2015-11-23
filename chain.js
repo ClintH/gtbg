@@ -3,52 +3,53 @@ var async = require("async"),
 	process = require("child_process"),
 	tmp = require("tmp"),
 	path = require("path"),
-	colors = require("colors/safe"),
 	util = require("./util"),
 	engine = require("./engine"),
-	strings = require("./strings")
+	strings = require("./strings"),
+	sox = require("./sox"),
+	presets = require("./presets")
 	;
 
 module.exports = {
-process:function(set, nconf, completion) {
+process:function(set, preset, completion) {
 	if (typeof set.files == 'undefined') throw new Error("No set");
 
 	var me = this;
 	async.waterfall([
 		function(callback) {
 			util.log("Pre-processing...")
-			var soxOpts = engine.processMeta(set.files, set.meta, nconf);
-			engine.preprocess(set.files, set.meta, soxOpts, nconf, callback);
+			var soxOpts = engine.processMeta(set.files, set.meta, preset);
+			engine.preprocess(set.files, set.meta, soxOpts, preset, callback);
 		},
 		function(callback) {
 			util.log("Pre-processing...done")
 		
-			nconf.set("outputPathFinal", 
-				strings.endsWithRemove(nconf.get("outputPath"), path.sep));
+			preset.outputPathFinal = 
+				strings.endsWithRemove(preset.outputPath, path.sep);
 
-			var file = path.basename(nconf.get("absBasePath"));
-			if (nconf.get("appendSliceCount")) {
-				file += "-" + nconf.get("slices");
+			var file = path.basename(preset.absBasePath);
+			if (preset.appendSliceCount) {
+				file += "-" + preset.slices;
 			}
 
-			nconf.set("outputPathFinal", 
-				path.join(nconf.get("outputPath"), 
-				file + ".wav"));
-			me.concat(set.files, set.meta, nconf, callback);
+			preset.outputPathFinal = 
+				path.join(preset.outputPath, 
+				file + ".wav");
+			me.concat(set.files, set.meta, preset, callback);
 		},
 		function(filename, callback) {
 			util.logg("Concatenated samples");
-			me.postprocess(filename, nconf, callback);
+			me.postprocess(filename, preset, callback);
 		},
 		function(filename, callback) {
 			// Move to output path
-			if (fs.existsSync(nconf.get("outputPathFinal")) && !nconf.get("overwrite")) {
+			if (fs.existsSync(preset.outputPathFinal) && !preset.overwrite) {
 				return callback({msg:"Output file exists. Set 'overwrite' option to allow overwriting",
-					output:nconf.get("outputPathFinal")
+					output:preset.outputPathFinal
 				})
 			}
 
-			fs.move(filename, nconf.get("outputPathFinal"), {clobber:true}, function(err) {
+			fs.move(filename, preset.outputPathFinal, {clobber:true}, function(err) {
 				if (err) {
 					var e = {};
 					if (err.code == "EPERM") {
@@ -56,24 +57,25 @@ process:function(set, nconf, completion) {
 						e.fix = "Output file might be open in another application";
 					}
 					e.input = filename;
-					e.output = nconf.get("outputPathFinal");
+					e.output = preset.outputPathFinal;
 					e.raw = err;
 					return callback(e);
 				}
-				callback(null, nconf.get("outputPathFinal"));
+				util.logg("Output: " + preset.outputPathFinal);
+				callback(null, preset.outputPathFinal);
 			});
 		}
 	], completion);
 },
 
-concat: function(files, meta, nconf, completion) {
+concat: function(files, meta, preset, completion) {
 	var inputFiles = "";
 	for (var i=0;i<meta.length;i++) {
 		inputFiles += meta[i].processedPath += " ";
 	}
 	tmp.file(function(err, outFile, fd, cleanupCallback) {
 		outFile += ".wav";
-		var cmd = nconf.get("soxBin") + " " + inputFiles + outFile;
+		var cmd = sox.fullPath() + " " + inputFiles + outFile;
 		process.exec(cmd, function(err, stout, sterr) {
 			if (err) return completion(
 				{	msg: "Could not join files", 
@@ -88,43 +90,42 @@ concat: function(files, meta, nconf, completion) {
 	});
 },
 
-postprocess: function(chain, nconf, completion) {
-	var sox = ""
+postprocess: function(chain, preset, completion) {
+	var soxCmd = ""
 
 	// Post-process: add end padding
-	if (nconf.get("chainLengths")) {
+	if (preset.chainLengths) {
 		var bestLength = 0;
-		for (var i=0;i<nconf.get("chainLengths").length;i++) {
-			if (nconf.get("chainLengths")[i] >= nconf.get("slices")) {
-				bestLength = nconf.get("chainLengths")[i];
+		for (var i=0;i<preset.chainLengths.length;i++) {
+			if (preset.chainLengths[i] >= preset.slices) {
+				bestLength = preset.chainLengths[i];
 				break;
 			}
 		}
-		var padBy = (bestLength-nconf.get("slices")) * nconf.get("sliceLength");
+		var padBy = (bestLength-preset.slices) * preset.sliceLength;
 
 		// Pad out
 		if (padBy > 0) {
-			util.logg("Fitting chain with " + nconf.get("slices") + 
+			util.logg("Fitting chain with " + preset.slices + 
 				" slices to a length of " + bestLength +
 				" slices (+" + padBy + " samples)");
-			sox += "pad 0 " + padBy + "s ";
+			soxCmd += "pad 0 " + padBy + "s ";
 		}
 	}
 
-	var outParams = util.getOutputParams(nconf);
-	sox += outParams.sox;
-	sox += nconf.get("post");
+	var outParams = presets.getOutputParams(preset);
+	soxCmd += outParams.sox;
+	if (preset.post)
+		soxCmd += " " + preset.post;
 	util.logg("Output: " + outParams.human);
 
 	// Post-process: apply normalisation
-	if (nconf.get("showSoxOpts"))
-		util.logg("   SoX: " + sox);
+	if (preset.showSoxOpts)
+		util.logg("   SoX: " + soxCmd);
 
 	tmp.file(function(err, outFile, fd, cleanupCallback) {
 		outFile += ".wav";
-		var cmd = nconf.get("soxBin") + " " + chain +" " + outParams.format +" " + outFile + " " + sox;
-		//if (nconf.get("showSoxOpts"))
-		//	console.log("   " + colors.blue("SoX") + " " + cmd);
+		var cmd = sox.fullPath() + " " + chain +" " + outParams.format +" " + outFile + " " + soxCmd;
 		process.exec(cmd, function(err, stout, sterr) {
 			if (err) return completion(
 				{	msg: "Could not post-process chain", 
@@ -132,7 +133,7 @@ postprocess: function(chain, nconf, completion) {
 					cmd: cmd,
 					input: chain,
 					output: outFile,
-					options: sox
+					options: soxCmd
 				});
 			completion(null, outFile);
 		})

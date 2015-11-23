@@ -1,7 +1,20 @@
-var colors = require("colors/safe");
+var chalk = require("chalk"),
+  fs = require("fs");
 
 module.exports = {
 
+fileExists:function(v) {
+  try {
+    var s = fs.statSync(v);
+    if (!s.isFile()) return "Not a valid path";
+  } catch (e) {
+    if (e.code =="ENOENT") {
+      return "Path does not exist";
+    }
+    return "Error " + e.message;
+  }
+  return null; 
+},
 log:function(m) {
 	console.log(" " + m);
 },
@@ -11,23 +24,8 @@ logg:function(m) {
 },
 
 loge:function(m) {
-	console.log(colors.red("Error: ")  + m);
+	console.log(chalk.red("Error: ")  + m);
 },
 
-getOutputParams: function(opts) {
-	var humanOut = "";
-	var outFormat = "--bits " + opts.get("bitDepth") +" ";
-	var sox = "rate " + opts.get("sampleRate") +" "
-	humanOut = opts.get("bitDepth") +"@" + opts.get("sampleRate");
-	if (opts.get("autoGain")) {
-		sox += "gain -nh";
-		humanOut +=". Autogain";
-	}
 
-	return {
-		human: humanOut,
-		sox: sox,
-		format: outFormat
-	}
-}
 }

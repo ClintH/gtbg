@@ -1,40 +1,9 @@
 {
 	
-	"soxBin": "sox.exe",
+	"soxPath": "",
 	"samples": "samples/",
 	"overwrite": true,
 	"outputPath": "output/",
 	"showSoxOpts": false,
-	"chainOt": {
-		"sliceLength": "auto",
-		"chainLengths": [2,3,4,6,8,12,16,24,32,48,64],
-		"bitDepth": 16,
-		"sampleRate": 44100,
-		"autoGain": true,
-		"appendSliceCount": true,
-		"post": ""
-	},
-	"chainRytm": {
-		"sliceLength": "auto",
-		"chainLengths": [1, 2,4,10,12,20,24,30,60],
-		"bitDepth": 16,
-		"sampleRate": 44100,
-		"autoGain": true,
-		"removeStereo": true,
-		"appendSliceCount": true,
-		"post": ""		
-	},
-	"md": {
-		"sampleRate": 44100,
-		"bitDepth": 12,
-		"prefix": 1.0,
-		"post": "",
-		"removeStereo": true
-	},
-	"ot": {
-		"sampleRate": 44100,
-		"bitDepth": 16,
-		"post": "",
-		"removeStereo": false
-	}
+  "presets": "presets.json"
 }
