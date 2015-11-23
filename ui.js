@@ -95,11 +95,13 @@ function start() {
     message: "Which preset?",
     choices: choices
   }, function(a) {
-    if (strings.startsWith("p-")) {
-      preset = presets.get(a.preset);
+    if (strings.startsWith(a.preset,"p-")) {
+      preset = presets.get(a.preset.substr(2));
       chooseSamples(); 
       return;
     }
+      console.log(a.preset);
+
   })
 }
 
