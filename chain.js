@@ -17,14 +17,14 @@ process:function(set, preset, completion) {
 	var me = this;
 	async.waterfall([
 		function(callback) {
-			util.log("Pre-processing...")
+			util.log("Pre-processing...");
 			var soxOpts = engine.processMeta(set.files, set.meta, preset);
 			engine.preprocess(set.files, set.meta, soxOpts, preset, callback);
 		},
 		function(callback) {
-			util.log("Pre-processing...done")
-		
-			preset.outputPathFinal = 
+			util.log("Pre-processing...done");
+
+			preset.outputPathFinal =
 				strings.endsWithRemove(preset.outputPath, path.sep);
 
 			var file = path.basename(preset.absBasePath);
@@ -32,8 +32,8 @@ process:function(set, preset, completion) {
 				file += "-" + preset.slices;
 			}
 
-			preset.outputPathFinal = 
-				path.join(preset.outputPath, 
+			preset.outputPathFinal =
+				path.join(preset.outputPath,
 				file + ".wav");
 			me.concat(set.files, set.meta, preset, callback);
 		},
@@ -46,7 +46,7 @@ process:function(set, preset, completion) {
 			if (fs.existsSync(preset.outputPathFinal) && !preset.overwrite) {
 				return callback({msg:"Output file exists. Set 'overwrite' option to allow overwriting",
 					output:preset.outputPathFinal
-				})
+				});
 			}
 
 			fs.move(filename, preset.outputPathFinal, {clobber:true}, function(err) {
@@ -78,20 +78,20 @@ concat: function(files, meta, preset, completion) {
 		var cmd = sox.fullPath() + " " + inputFiles + outFile;
 		process.exec(cmd, function(err, stout, sterr) {
 			if (err) return completion(
-				{	msg: "Could not join files", 
-					raw: sterr, 
+				{	msg: "Could not join files",
+					raw: sterr,
 					cmd: cmd,
 					input: inputFiles,
 					output: outFile,
 					options: ""
 				});
 			completion(null, outFile);
-		})
+		});
 	});
 },
 
 postprocess: function(chain, preset, completion) {
-	var soxCmd = ""
+	var soxCmd = "";
 
 	// Post-process: add end padding
 	if (preset.chainLengths) {
@@ -106,7 +106,7 @@ postprocess: function(chain, preset, completion) {
 
 		// Pad out
 		if (padBy > 0) {
-			util.logg("Fitting chain with " + preset.slices + 
+			util.logg("Fitting chain with " + preset.slices +
 				" slices to a length of " + bestLength +
 				" slices (+" + padBy + " samples)");
 			soxCmd += "pad 0 " + padBy + "s ";
@@ -128,15 +128,15 @@ postprocess: function(chain, preset, completion) {
 		var cmd = sox.fullPath() + " " + chain +" " + outParams.format +" " + outFile + " " + soxCmd;
 		process.exec(cmd, function(err, stout, sterr) {
 			if (err) return completion(
-				{	msg: "Could not post-process chain", 
-					raw: sterr, 
+				{	msg: "Could not post-process chain",
+					raw: sterr,
 					cmd: cmd,
 					input: chain,
 					output: outFile,
 					options: soxCmd
 				});
 			completion(null, outFile);
-		})
+		});
 	});
 }
-}
+};

@@ -2,7 +2,7 @@ module.exports =  {
 	splitTrim: function(input, sep) {
 		return input.split(sep).map(function(v,i,a) {
 			return v.trim();
-		})
+		});
 	},
 
 	upTo: function(haystack, needle) {
@@ -15,7 +15,7 @@ module.exports =  {
 		if (haystack.length <= needle.length) return false;
 		var pos = haystack.toLowerCase().lastIndexOf(needle.toLowerCase());
 		if (pos < 0) return false;
-		return (pos + needle.length == haystack.length)
+		return (pos + needle.length === haystack.length);
 	},
 
 	startsWith: function(haystack, needle) {
@@ -24,7 +24,7 @@ module.exports =  {
 
 		if (haystack.length <= needle.length) return false;
 		var pos = haystack.toLowerCase().indexOf(needle.toLowerCase());
-		if (pos == 0) return true;
+		if (pos === 0) return true;
 		return false;
 	},
 
@@ -35,4 +35,4 @@ module.exports =  {
 		return haystack;
 	}
 
-}
+};

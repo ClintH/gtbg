@@ -17,10 +17,6 @@ var inquirer = require("inquirer"),
 	presets = require("./presets")
 	;
 
-const updateNotifier = require('update-notifier');
-const pkg = require('./package.json');
-updateNotifier({pkg}).notify();
-
 console.log("\n " + chalk.white.bgRed("/_") + " gtbg\n");
 
 config.init(); // Load from config
@@ -31,7 +27,7 @@ if (!sox.exists()) {
   sox.install();
 } else {
 	// Sox is installed
-	if (argv._.length == 0) { // No command
+	if (argv._.length === 0) { // No command
 		var ui = require("./ui");
 		ui(function(complete) {
 			start(complete);
@@ -46,14 +42,14 @@ if (!sox.exists()) {
 			// Some command
 			// Load preset
 			var preset = presets.get(opt);
-			if (preset == null) {
+			if (preset === null) {
 				console.log(chalk.red("Preset '" + opt + "' not found."));
 				console.log("Try: " + presets.getKeys().join(", "));
 			} else {
 				// Got a valid preset
 				start(preset);
 			}
-	}	
+	}
 }
 
 function start(p) {
@@ -62,23 +58,24 @@ function start(p) {
 		if (typeof(p[k]) == 'undefined') {
 			p[k] = config.data[k];
 		}
-	})
+	});
 
 	// Copy overrides from command line to active preset
 	_.forIn(p, function(v,k) {
 		if (typeof(argv[k]) !== 'undefined') {
 			p[k] = argv[k];
 		}
-	})
+	});
 
 	// Validate existence of samples directory
 	var relBasePath = p.samples;
+	var absBasePath = "";
 	try {
-		var absBasePath = fs.realpathSync(p.samples);
+		absBasePath = fs.realpathSync(p.samples);
 		if (!fs.existsSync(absBasePath)) {
 			util.loge("Sample path does not exist: " + relBasePath);
 			return;
-		}	
+		}
 	} catch (e) {
 		showError({
 			raw: e.toString(),
@@ -90,13 +87,13 @@ function start(p) {
 	var contents = fs.readdirSync(absBasePath);
 
 	async.forEachSeries(
-	  contents, 
+	  contents,
 	  // Process sub-directories
 	  function(item, callback) {
 	  	var fullPath = absBasePath + path.sep +  item;
 	   	if (fs.lstatSync(fullPath).isDirectory()) {
 	   		preset = _.clone(p, true);
-	   		
+
 	   		// Output individual samples to subdirectories
 	   		if (preset.outputPath && typeof(preset.sliceLength) == 'undefined') {
 	   			if (strings.endsWith(preset.outputPath, "/")) {
@@ -106,7 +103,7 @@ function start(p) {
 
 				processDirectory(fullPath, preset, callback);
 	    } else callback();
-	  }, 
+	  },
 	  function(err){
 	    if (err) {
 	      return showError(err);
@@ -117,7 +114,7 @@ function start(p) {
 	    	else {
 	    		console.log(chalk.yellow("\nAll done."));
 	    	}
-	    })
+	    });
 	  }
 	);
 }
@@ -127,8 +124,8 @@ function processDirectory(absBasePath, preset, completion) {
 	preset.absBasePath = absBasePath;
 	handleDirectory(absBasePath, function(err, set) {
 		if (err) return completion(err);
-		if (set.meta.length == 0) return completion();
-		if (typeof preset["outputPath"] == 'undefined') {
+		if (set.meta.length === 0) return completion();
+		if (typeof preset.outputPath == 'undefined') {
 			preset.outputPath = path.dirname(absBasePath);
 		}
 
@@ -139,7 +136,7 @@ function processDirectory(absBasePath, preset, completion) {
 			loadedSet(set, preset, function(err, result) {
 				if (err) return completion(err);
 				else completion();
-			})
+			});
 		});
 	});
 }
@@ -160,17 +157,17 @@ function showError(err) {
 function loadedSet(set, preset, completion) {
 	var op = null;
 	if (preset.sliceLength) {
-		op = require("./chain")
+		op = require("./chain");
 	} else if (argv._[0] == "info") {
 		op = require("./info");
 	} else {
 		op  = require("./sample");
 	}
-	op.process(set, preset, completion);	
+	op.process(set, preset, completion);
 }
 
 function handleDirectory(basePath, completion) {
-	if (!strings.endsWith(basePath, "/") && !strings.endsWith(basePath, "\\")) 
+	if (!strings.endsWith(basePath, "/") && !strings.endsWith(basePath, "\\"))
 			basePath += path.sep;
 
 	var files = fs.readdirSync(basePath);
@@ -180,13 +177,13 @@ function handleDirectory(basePath, completion) {
 		function(callback) {
 			// Filter out non sample-looking things
 			var filteredFiles = files.filter(function(f) {
-				return (strings.endsWith(f, ".aiff") || strings.endsWith(f, ".wav") || strings.endsWith(f, ".mp3"))
-			})
+				return (strings.endsWith(f, ".aiff") || strings.endsWith(f, ".wav") || strings.endsWith(f, ".mp3"));
+			});
 			callback(null, filteredFiles);
 		},
 		function(filteredFiles, callback) {
 			util.log("Extracting information for " + filteredFiles.length + " file(s)");
-			if (filteredFiles.length == 0) return callback(null, []); // No files
+			if (filteredFiles.length === 0) return callback(null, []); // No files
 			set.files = filteredFiles;
 			engine.getMetadata(set.files, basePath, callback);
 		}
@@ -195,5 +192,3 @@ function handleDirectory(basePath, completion) {
 		completion(err, set);
 	});
 }
-
-

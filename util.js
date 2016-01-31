@@ -14,7 +14,7 @@ fileExists:function(v) {
     }
     return "Error " + e.message;
   }
-  return null; 
+  return null;
 },
 log:function(m) {
 	console.log(" " + m);
@@ -41,5 +41,4 @@ layerOnData: function(f, existing) {
   }
   return null;
 }
-
-}
+};

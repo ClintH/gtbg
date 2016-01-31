@@ -1,4 +1,4 @@
-var 
+var
 	_	= require("lodash"),
 	chalk = require("chalk"),
 	engine = require("./engine"),
@@ -17,9 +17,9 @@ process:function(set, preset, completion) {
 			if (k == "padBy") return;
 
 			console.log(chalk.gray(" " + k + ": ") + chalk.dim(v));
-		})
+		});
 		console.log("");
-	} 
+	}
 	completion();
 },
-}
+};

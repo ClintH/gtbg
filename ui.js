@@ -1,4 +1,3 @@
-"use strict";
 var inquirer = require("inquirer"),
   fs = require("fs"),
   config = require("./config"),
@@ -19,8 +18,8 @@ var dirValidate = function(v) {
     }
     return "Error " + e.message;
   }
-  return true; 
-}
+  return true;
+};
 
 function chooseSliceLen() {
   inquirer.prompt({
@@ -42,7 +41,7 @@ function chooseSliceLen() {
   }, function(a) {
     config.set("sliceLength", a.sliceLength);
     complete(preset);
-  })
+  });
 }
 function chooseOutput() {
    inquirer.prompt({
@@ -57,7 +56,7 @@ function chooseOutput() {
     if (preset.sliceLength) {
       chooseSliceLen();
     } else complete(preset);
-  })
+  });
 }
 
 function chooseSamples() {
@@ -72,7 +71,7 @@ function chooseSamples() {
   }, function(a) {
     config.set("samples", a.samples);
     chooseOutput();
-  })
+  });
 }
 
 function start() {
@@ -83,7 +82,7 @@ function start() {
     var choice = {
       value: "p-" + key,
       name: preset.machine + ": " + preset.description + " (" + key +")"
-    }
+    };
     choices.push(choice);
   });
   choices.push(new inquirer.Separator());
@@ -97,13 +96,13 @@ function start() {
   }, function(a) {
     if (strings.startsWith(a.preset,"p-")) {
       preset = presets.get(a.preset.substr(2));
-      chooseSamples(); 
+      chooseSamples();
       return;
     }
       console.log(a.preset);
 
-  })
+  });
 }
 
 start();
-}
+};

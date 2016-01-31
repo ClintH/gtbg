@@ -75,12 +75,12 @@ processMeta:function(files, meta, preset) {
 
 		// 'Upgrade' mono channels to stereo
 		//if (slicing && meta[i].channels == 1) {
-		if (meta[i].channels == 1) {
+		if (meta[i].channels == 1 && !preset.removeStereo) {
 			soxOpts[i].push("channels 2");
 		}
 		// Change sample rate if necessary
 		if (meta[i].sampleRate !== preset.sampleRate) {
-			soxOpts[i].push("rate " + preset.sampleRate);	
+			soxOpts[i].push("rate " + preset.sampleRate);
 		}
 	}
 	return soxOpts;
@@ -97,22 +97,22 @@ preprocess:function(files, meta, soxOpts, preset, completion) {
 		});
 	}
 
-	async.eachLimit(jobs, 2, 
+	async.eachLimit(jobs, 2,
 		function(job, cb) {
 			var opts = job.sox.join(" ");
 			tmp.file(function(err, outFile, fd, cleanupCallback) {
 				if (err) return cb(err);
-				outFile += ".wav"
-				var cmd = sox.fullPath() + " \"" + 
-					job.meta.fullPath + "\" " + 
-					outFile + " " + 
+				outFile += ".wav";
+				var cmd = sox.fullPath() + " \"" +
+					job.meta.fullPath + "\" " +
+					outFile + " " +
 					opts;
 				if (preset.showSoxOpts && opts.length > 1)
 						util.logg("SoX: " + opts);
 				process.exec(cmd, function(err, stout, sterr) {
 					if (err) return cb(
-						{	msg: "Could not preprocess", 
-							raw: sterr, 
+						{	msg: "Could not preprocess",
+							raw: sterr,
 							cmd: cmd,
 							input: job.meta.fullPath,
 							output: outFile,
@@ -123,7 +123,7 @@ preprocess:function(files, meta, soxOpts, preset, completion) {
 				});
 			});
 		}, function(err) {
-			completion(err)
+			completion(err);
 		}
 	);
 },
@@ -133,7 +133,7 @@ parseSoxInfo:function(stout, meta) {
 
 	for (var i=0;i<lines.length;i++) {
 		lines[i] = strings.endsWithRemove(lines[i], "\r");
-		if (lines[i].length == 0) continue;
+		if (lines[i].length === 0) continue;
 		var lineSplit = lines[i].split(": ");
 		if (lineSplit.length !== 2) {
 			util.loge("Expected two tokens: " + lines[i]);
@@ -177,18 +177,18 @@ getMetadataForFile: function(meta, completion) {
 			console.log("Msg: " + sterr);
 			var e ={msg: "Could not look up metadata", raw: err, path: meta.fullPath};
 			if (!fs.existsSync(sox.fullPath())) {
-				e.fix = "Is Sox located at " + sox.fullPath() +"?"; 
-			} 
+				e.fix = "Is Sox located at " + sox.fullPath() +"?";
+			}
 			return completion(e);
-		} 
+		}
 		completion(null, me.parseSoxInfo(stout, meta));
 	});
 },
 
-getMetadata: function(files, path, completion) { 
+getMetadata: function(files, path, completion) {
 	var me = this;
 	async.mapSeries(files, function(file, cb) {
-		if (file.indexOf(".") < 0) return cb(null); // Seems to be a directory, skip		
+		if (file.indexOf(".") < 0) return cb(null); // Seems to be a directory, skip
 		var fullPath = path + file;
 		var meta = {
 			path: path,
@@ -197,4 +197,4 @@ getMetadata: function(files, path, completion) {
 		me.getMetadataForFile(meta, cb);
 	}, completion);
 }
-}
+};

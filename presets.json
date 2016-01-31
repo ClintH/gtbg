@@ -14,17 +14,25 @@
     "sliceLength": "auto",
     "chainLengths": [1, 2,4,10,12,20,24,30,60],
     "bitDepth": 16,
-    "sampleRate": 44100,
+    "sampleRate": 48000,
     "autoGain": true,
     "removeStereo": true,
     "appendSliceCount": true,
     "post": "",
     "machine": "Rytm",
-    "description": "Create a chain of samples"    
+    "description": "Create a chain of samples"
+  },
+  "rytm": {
+    "bitDepth": 16,
+    "sampleRate": 48000,
+    "removeStereo": true,
+    "post": "",
+    "machine": "Rytm",
+    "description": "Process samples"
   },
   "md": {
     "sampleRate": 44100,
-    "bitDepth": 12,
+    "bitDepth": 16,
     "prefix": 1.0,
     "post": "",
     "removeStereo": true,

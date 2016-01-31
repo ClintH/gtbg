@@ -1,4 +1,3 @@
-"use strict";
 var _ = require("lodash"),
   chalk = require("chalk"),
   fs = require("fs"),
@@ -12,30 +11,33 @@ Presets.prototype.init = function() {
   this.data = {};
   for (var i=0;i<paths.length;i++) {
     var err = util.layerOnData(paths[i], this.data);
-    if (err && i == 0)
+    if (err && i === 0)
       console.log(chalk.red("Could not load: " + err));
   }
-}
+};
 Presets.prototype.get = function(key) {
   return this.data[key];
-}
+};
 Presets.prototype.getKeys = function() {
   return _.keys(this.data);
-}
+};
 Presets.prototype.getOutputParams = function(preset) {
   var humanOut = "";
   var outFormat = "--bits " + preset.bitDepth +" ";
-  var sox = "rate " + preset.sampleRate +" "
+  var sox = "rate " + preset.sampleRate +" ";
   humanOut = preset.bitDepth +"@" + preset.sampleRate;
   if (preset.autoGain) {
     sox += "gain -nh";
     humanOut +=". Autogain";
+  }
+  if (preset.removeStereo) {
+    sox += " channels 1";
   }
 
   return {
     human: humanOut,
     sox: sox,
     format: outFormat
-  }
-}
+  };
+};
 module.exports = new Presets();
