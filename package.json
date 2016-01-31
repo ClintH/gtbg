@@ -1,6 +1,6 @@
 {
   "name": "gtbg",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Sample preparer for Elektron Octatrack, Rytm and Machinedrum",
   "main": "app.js",
   "author": "Clint Heyer",
