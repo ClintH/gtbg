@@ -4,7 +4,9 @@ var async = require('async'),
 	fs = require("fs"),
 	util = require("./util"),
 	sox = require("./sox"),
-	strings = require("./strings")
+	strings = require("./strings"),
+	presets = require("./presets")
+
 ;
 
 module.exports = {
@@ -79,14 +81,16 @@ processMeta:function(files, meta, preset) {
 			soxOpts[i].push("channels 2");
 		}
 		// Change sample rate if necessary
-		if (meta[i].sampleRate !== preset.sampleRate) {
-			soxOpts[i].push("rate " + preset.sampleRate);
-		}
+		// if (meta[i].sampleRate !== preset.sampleRate) {
+		// 	soxOpts[i].push("rate " + preset.sampleRate);
+		// }
 	}
 	return soxOpts;
 },
 
 preprocess:function(files, meta, soxOpts, preset, completion) {
+	var presetParams = presets.getOutputParams(preset);
+
 	var jobs = [];
 	for (var i=0;i<files.length;i++) {
 		jobs.push({
@@ -105,10 +109,11 @@ preprocess:function(files, meta, soxOpts, preset, completion) {
 				outFile += ".wav";
 				var cmd = sox.fullPath() + " \"" +
 					job.meta.fullPath + "\" " +
+					presetParams.format + " "+
 					outFile + " " +
 					opts;
 				if (preset.showSoxOpts && opts.length > 1)
-						util.logg("SoX: " + opts);
+					util.logg("SoX: " + opts);
 				process.exec(cmd, function(err, stout, sterr) {
 					if (err) return cb(
 						{	msg: "Could not preprocess",

@@ -2,6 +2,7 @@ var async = require("async"),
 	fs = require("fs"),
 	process = require("child_process"),
 	tmp = require("tmp"),
+	mv = require("mv"),
 	path = require("path"),
 	mkdirp = require("mkdirp"),
 	util = require("./util"),
@@ -40,6 +41,7 @@ process:function(set, preset, completion) {
 					soxOpts[i].push(preset.post);
 			}
 
+			util.logg("Output: " + outParams.human);
 			engine.preprocess(set.files, set.meta, soxOpts, preset, callback);
 		},
 		function(callback) {
@@ -71,7 +73,7 @@ renameFiles: function(set, preset, callback) {
 					output:preset.outputPath
 				});
 			}
-			fs.rename(item.processedPath, outputPath, function(err) {
+			mv(item.processedPath, outputPath, function(err) {
 				if (err) {
 					var e = {};
 					if (err.code == "EPERM") {

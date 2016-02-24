@@ -27,6 +27,7 @@
     "sampleRate": 48000,
     "removeStereo": true,
     "post": "",
+    "autoGain": true,
     "machine": "Rytm",
     "description": "Process samples"
   },

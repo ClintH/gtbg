@@ -27,13 +27,14 @@ Presets.prototype.getOutputParams = function(preset) {
   var sox = "rate " + preset.sampleRate +" ";
   humanOut = preset.bitDepth +"@" + preset.sampleRate;
   if (preset.autoGain) {
-    sox += "gain -nh";
+    sox += "gain -nh ";
     humanOut +=". Autogain";
   }
   if (preset.removeStereo) {
-    sox += " channels 1";
+    sox += "channels 1 ";
   }
 
+  sox = sox.trim();
   return {
     human: humanOut,
     sox: sox,
