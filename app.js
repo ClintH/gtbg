@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-"use strict";
 var inquirer = require("inquirer"),
 	fs = require("fs"),
 	async = require("async"),
